@@ -15,61 +15,59 @@ cuts = {
     "100 IM": 118.29, "200 IM": 248.79
 }
 
-# Session memory
 if 'pbs' not in st.session_state:
     st.session_state.pbs = {event: 0.0 for event in cuts}
 if 'goals' not in st.session_state:
     st.session_state.goals = {event: 0.0 for event in cuts}
 
-# --- 2. STYLING ---
+# --- 2. THE ULTIMATE VISUAL FIX ---
 st.set_page_config(page_title="Swim Tracker", layout="centered")
 
 st.markdown("""
     <style>
-    .stApp { background-color: white; }
-    p, span, label, td, th, div { color: black !important; }
+    /* 1. MAIN BODY: Force White Background and Black Text */
+    .stApp {
+        background-color: #FFFFFF !important;
+    }
+    .stApp p, .stApp span, .stApp label, .stApp td, .stApp th, .stApp div {
+        color: #000000 !important;
+    }
+
+    /* 2. SIDEBAR: Force Dark Background and White Text */
+    [data-testid="stSidebar"] {
+        background-color: #111111 !important;
+    }
+    [data-testid="stSidebar"] p, 
+    [data-testid="stSidebar"] span, 
+    [data-testid="stSidebar"] label, 
+    [data-testid="stSidebar"] h1, 
+    [data-testid="stSidebar"] h2 {
+        color: #FFFFFF !important;
+    }
+
+    /* 3. HEADER BANNER: Keep Blue with White Text */
     .header-box {
         background-color: #0056b3;
         padding: 20px;
         border-radius: 15px;
-        color: white !important;
+        color: #FFFFFF !important;
         text-align: center;
+        margin-bottom: 10px;
     }
-    .header-box h1 { color: white !important; }
+    .header-box h1 {
+        color: #FFFFFF !important;
+        margin: 0;
+    }
+
+    /* 4. TABLE: Ensure borders are visible and text is sharp */
+    .stTable {
+        background-color: #FFFFFF !important;
+        border: 1px solid #CCCCCC !important;
+    }
     </style>
     """, unsafe_allow_html=True)
 
 # --- 3. HEADER ---
 st.markdown(f'<div class="header-box"><h1>🏊 {swimmer_name.upper()}</h1></div>', unsafe_allow_html=True)
 
-days_left = (meet_date - datetime.now()).days
-if days_left >= 0:
-    st.info(f"⏳ {days_left} Days until {meet_name}")
-
-# --- 4. SIDEBAR ---
-with st.sidebar:
-    st.header("Update Times")
-    event_choice = st.selectbox("Select Event", list(cuts.keys()))
-    
-    val_pb = st.number_input("New PB (Seconds)", min_value=0.0, format="%.2f", key="pb_input")
-    if st.button("Save PB"):
-        st.session_state.pbs[event_choice] = val_pb
-        st.balloons()
-            
-    val_goal = st.number_input("Goal (Seconds)", min_value=0.0, format="%.2f", key="goal_input")
-    if st.button("Save Goal"):
-        st.session_state.goals[event_choice] = val_goal
-        st.success("Goal Saved!")
-
-# --- 5. DATA TABLE ---
-def format_time(seconds):
-    if seconds <= 0: return "--"
-    if seconds < 60: return f"{seconds:.2f}s"
-    m = int(seconds // 60)
-    s = seconds % 60
-    return f"{m}:{s:05.2f}"
-
-rows = []
-for event, cut in cuts.items():
-    pb = st.session_state.pbs[event]
-    goal = st.session_state.goals[event]
+days_left = (meet_date
