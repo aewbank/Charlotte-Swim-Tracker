@@ -11,7 +11,7 @@ cuts = {"50 Free": 31.39, "100 Free": 109.29, "500 Free": 379.39, "50 Back": 36.
 if 'pbs' not in st.session_state: st.session_state['pbs'] = {e: 0.0 for e in cuts}
 if 'goals' not in st.session_state: st.session_state['goals'] = {e: 0.0 for e in cuts}
 
-# --- 2. THE CSS (Single Line Only) ---
+# --- 2. CSS ---
 st.set_page_config(page_title="Swim Tracker", layout="centered")
 st.markdown("<style>.stApp {background-color: white !important;} .stApp p, .stApp span, .stApp label, .stApp td, .stApp th, .stApp div {color: black !important;} [data-testid='stSidebar'] {background-color: #111111 !important;} [data-testid='stSidebar'] p, [data-testid='stSidebar'] span, [data-testid='stSidebar'] label, [data-testid='stSidebar'] h2 {color: white !important;}</style>", unsafe_allow_html=True)
 
@@ -26,43 +26,32 @@ if days >= 0:
 else:
     st.success("🎉 {} Day!".format(m_name))
 
-# --- 4. SIDEBAR ---
+# --- 4. SIDEBAR (NEW SPLIT-TIME INPUTS) ---
 with st.sidebar:
     st.header("Update Performance")
     ev = st.selectbox("Select Event", list(cuts.keys()), key="ev_key")
-    p_val = st.number_input("New PB (Seconds)", min_value=0.0, format="%.2f", key="p_key")
-    if st.button("Save PB", key="p_btn"):
-        st.session_state['pbs'][ev] = p_val
+    
+    # PB SECTION
+    st.subheader("New PB")
+    col_pb_m, col_pb_s = st.columns(2)
+    with col_pb_m: pb_min = st.number_input("Min", min_value=0, step=1, key="pb_m")
+    with col_pb_s: pb_sec = st.number_input("Sec", min_value=0.0, max_value=59.99, step=0.01, key="pb_s")
+    if st.button("Save PB", key="pb_btn"):
+        st.session_state['pbs'][ev] = (pb_min * 60) + pb_sec
         st.balloons()
-    g_val = st.number_input("Goal (Seconds)", min_value=0.0, format="%.2f", key="g_key")
-    if st.button("Save Goal", key="g_btn"):
-        st.session_state['goals'][ev] = g_val
+    
+    st.divider()
+    
+    # GOAL SECTION
+    st.subheader("New Goal")
+    col_gl_m, col_gl_s = st.columns(2)
+    with col_gl_m: gl_min = st.number_input("Min", min_value=0, step=1, key="gl_m")
+    with col_gl_s: gl_sec = st.number_input("Sec", min_value=0.0, max_value=59.99, step=0.01, key="gl_s")
+    if st.button("Save Goal", key="gl_btn"):
+        st.session_state['goals'][ev] = (gl_min * 60) + gl_sec
         st.toast("Goal Saved!")
 
 # --- 5. TABLE LOGIC ---
 def fmt(s):
     if s <= 0: return "--"
-    if s < 60: return "{:.2f}s".format(s)
-    return "{:d}:{:05.2f}".format(int(s//60), s%60)
-
-rows = []
-for e, c in cuts.items():
-    p = st.session_state['pbs'][e]
-    g = st.session_state['goals'][e]
-    stat = "No Time"
-    if p > 0:
-        if p <= c: stat = "✅ ACHIEVED"
-        else: stat = "{:.2f}s to go".format(p - c)
-    rows.append({"Event": e, "Current PB": fmt(p), "Goal": fmt(g), "A Cut": fmt(c), "Status": stat})
-
-st.table(pd.DataFrame(rows))
-
-# --- 6. FOOTER ---
-st.divider()
-c1, c2 = st.columns(2)
-with c1:
-    st.subheader("🎒 Checklist")
-    st.checkbox("2 Pairs Goggles", key="k1"); st.checkbox("Team Cap", key="k2"); st.checkbox("Water Bottle", key="k3")
-with c2:
-    st.subheader("🍌 Nutrition")
-    st.warning("Eat oatmeal or a banana 2 hours before warm-ups!")
+    if s < 60
