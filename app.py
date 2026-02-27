@@ -7,6 +7,7 @@ swimmer_name = "Charlotte"
 meet_name = "Junior Olympics"
 meet_date = datetime(2026, 3, 20) 
 
+# Full 9-10 Girls USA Swimming 'A' Cuts
 cuts = {
     "50 Free": 31.39, "100 Free": 109.29, "500 Free": 379.39,
     "50 Back": 36.29, "100 Back": 117.99,
@@ -15,59 +16,42 @@ cuts = {
     "100 IM": 118.29, "200 IM": 248.79
 }
 
+# --- 2. STATE INITIALIZATION ---
+# QA Note: Initializing state outside of logic to prevent KeyErrors
 if 'pbs' not in st.session_state:
-    st.session_state.pbs = {event: 0.0 for event in cuts}
+    st.session_state['pbs'] = {event: 0.0 for event in cuts}
 if 'goals' not in st.session_state:
-    st.session_state.goals = {event: 0.0 for event in cuts}
+    st.session_state['goals'] = {event: 0.0 for event in cuts}
 
-# --- 2. THE ULTIMATE VISUAL FIX ---
+# --- 3. UI & STYLING ---
 st.set_page_config(page_title="Swim Tracker", layout="centered")
 
-st.markdown("""
+# Forced Contrast CSS
+# QA Note: Using a raw string (r"") to prevent escaping issues in CSS
+st.markdown(r"""
     <style>
-    /* 1. MAIN BODY: Force White Background and Black Text */
-    .stApp {
-        background-color: #FFFFFF !important;
-    }
+    .stApp { background-color: #FFFFFF !important; }
+    [data-testid="stHeader"] { background-color: rgba(0,0,0,0) !important; }
+    
+    /* Main Content Colors */
     .stApp p, .stApp span, .stApp label, .stApp td, .stApp th, .stApp div {
         color: #000000 !important;
     }
 
-    /* 2. SIDEBAR: Force Dark Background and White Text */
-    [data-testid="stSidebar"] {
-        background-color: #111111 !important;
-    }
-    [data-testid="stSidebar"] p, 
-    [data-testid="stSidebar"] span, 
-    [data-testid="stSidebar"] label, 
-    [data-testid="stSidebar"] h1, 
-    [data-testid="stSidebar"] h2 {
+    /* Sidebar Contrast */
+    [data-testid="stSidebar"] { background-color: #111111 !important; }
+    [data-testid="stSidebar"] p, [data-testid="stSidebar"] span, 
+    [data-testid="stSidebar"] label, [data-testid="stSidebar"] h2 {
         color: #FFFFFF !important;
     }
 
-    /* 3. HEADER BANNER: Keep Blue with White Text */
+    /* Banner */
     .header-box {
         background-color: #0056b3;
         padding: 20px;
         border-radius: 15px;
         color: #FFFFFF !important;
         text-align: center;
-        margin-bottom: 10px;
+        margin-bottom: 20px;
     }
-    .header-box h1 {
-        color: #FFFFFF !important;
-        margin: 0;
-    }
-
-    /* 4. TABLE: Ensure borders are visible and text is sharp */
-    .stTable {
-        background-color: #FFFFFF !important;
-        border: 1px solid #CCCCCC !important;
-    }
-    </style>
-    """, unsafe_allow_html=True)
-
-# --- 3. HEADER ---
-st.markdown(f'<div class="header-box"><h1>🏊 {swimmer_name.upper()}</h1></div>', unsafe_allow_html=True)
-
-days_left = (meet_date
+    .header-box h1 { color: #FFFFFF !important;
