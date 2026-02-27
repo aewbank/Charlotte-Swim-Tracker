@@ -6,10 +6,9 @@ from datetime import datetime
 swimmer_name = "Charlotte" 
 m_name = "Junior Olympics"
 m_date = datetime(2026, 3, 20) 
-# Events and Cuts
 cuts = {"50 Free": 31.39, "100 Free": 109.29, "500 Free": 379.39, "50 Back": 36.29, "100 Back": 117.99, "50 Breast": 40.99, "100 Breast": 130.19, "50 Fly": 34.39, "100 Fly": 118.99, "100 IM": 118.29, "200 IM": 248.79}
 
-# Initialize State
+# Initialize State with float values to be safe
 if "pbs" not in st.session_state: st.session_state["pbs"] = {e: 0.0 for e in cuts}
 if "goals" not in st.session_state: st.session_state["goals"] = {e: 0.0 for e in cuts}
 
@@ -29,31 +28,35 @@ with st.sidebar:
     ev = st.selectbox("Select Event", list(cuts.keys()), key="ev_key")
     
     st.subheader("New PB")
-    p_m = st.number_input("Min", min_value=0, step=1, key="pbm")
-    p_s = st.number_input("Sec", min_value=0.0, max_value=59.99, step=0.01, key="pbs")
+    # Explicitly set value=0.0 to force Float type
+    p_m = st.number_input("Min", min_value=0, step=1, value=0, key="pbm")
+    p_s = st.number_input("Sec", min_value=0.0, max_value=59.99, step=0.01, value=0.0, key="pbs")
     if st.button("Save PB", key="pbtn"):
-        st.session_state["pbs"][ev] = (p_m * 60) + p_s
+        st.session_state["pbs"][ev] = float((p_m * 60) + p_s)
         st.balloons()
     
     st.divider()
     
     st.subheader("New Goal")
-    g_m = st.number_input("Min ", min_value=0, step=1, key="glm")
-    g_s = st.number_input("Sec ", min_value=0.0, max_value=59.99, step=0.01, key="gls")
+    g_m = st.number_input("Min ", min_value=0, step=1, value=0, key="glm")
+    g_s = st.number_input("Sec ", min_value=0.0, max_value=59.99, step=0.01, value=0.0, key="gls")
     if st.button("Save Goal", key="gbtn"):
-        st.session_state["goals"][ev] = (g_m * 60) + g_s
+        st.session_state["goals"][ev] = float((g_m * 60) + g_s)
         st.toast("Goal Saved!")
 
 # --- 4. TABLE LOGIC ---
 def fmt(s):
-    if s <= 0: return "--"
-    if s < 60: return "{:.2f}s".format(s)
-    return "{:d}:{:05.2f}".format(int(s//60), s%60)
+    try:
+        s = float(s)
+        if s <= 0: return "--"
+        if s < 60: return "{:.2f}s".format(s)
+        return "{:d}:{:05.2f}".format(int(s//60), s%60)
+    except: return "--"
 
 rows = []
 for e, c in cuts.items():
-    p = st.session_state["pbs"].get(e, 0.0)
-    g = st.session_state["goals"].get(e, 0.0)
+    p = float(st.session_state["pbs"].get(e, 0.0))
+    g = float(st.session_state["goals"].get(e, 0.0))
     
     if p <= 0: stat = "No Time"
     elif p <= c: stat = "✅ ACHIEVED"
