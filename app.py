@@ -15,36 +15,48 @@ cuts = {
     "100 IM": 118.29, "200 IM": 248.79
 }
 
-# Initialize session memory for PBs and Goals
+# Session memory (Resets on refresh until we connect Google Sheets)
 if 'pbs' not in st.session_state:
     st.session_state.pbs = {event: 0.0 for event in cuts}
 if 'goals' not in st.session_state:
     st.session_state.goals = {event: 0.0 for event in cuts}
 
-# --- 2. HIGH-VISIBILITY STYLING ---
+# --- 2. STYLING (Forced Black Text) ---
 st.set_page_config(page_title=f"{swimmer_name}'s Tracker", layout="centered")
 
-st.markdown("""
+# This block forces the browser to show black text on a white background
+st.markdown(
+    """
     <style>
-    root, .stApp, p, span, label, .stMarkdown, td, th {
-        color: #000000 !important;
-    }
+    .stApp { background-color: #ffffff; }
+    root, p, span, label, td, th, .stMarkdown { color: #000000 !important; }
     .header-box {
         background-color: #0056b3;
-        padding: 25px;
+        padding: 20px;
         border-radius: 15px;
         color: #ffffff !important;
         text-align: center;
-        margin-bottom: 20px;
     }
     .header-box h1 { color: #ffffff !important; }
-    .stTable {
-        background-color: #ffffff;
-        border: 1px solid #dddddd;
-        border-radius: 10px;
-    }
-    [data-testid="stSidebar"] .stMarkdown, [data-testid="stSidebar"] label {
-        color: #000000 !important;
-    }
     </style>
-    """, unsafe_allow_
+    """, 
+    unsafe_allow_html=True
+)
+
+# --- 3. HEADER ---
+st.markdown(f'<div class="header-box"><h1>🏊 {swimmer_name.upper()}\'S TRACKER</h1></div>', unsafe_allow_html=True)
+
+days_left = (meet_date - datetime.now()).days
+if days_left >= 0:
+    st.info(f"⏳ **{days_left} Days** until {meet_name}!")
+else:
+    st.success(f"🎉 It's {meet_name} Day!")
+
+# --- 4. SIDEBAR ---
+with st.sidebar:
+    st.header("⏱ Update Data")
+    event_choice = st.selectbox("Select Event", list(cuts.keys()))
+    
+    # Update PB
+    new_pb = st.number_input("New PB (Seconds)", min_value=0.0, format="%.2f", key="pb_val")
+    if st.button("
