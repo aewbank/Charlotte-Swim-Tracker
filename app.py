@@ -8,27 +8,20 @@ m_name = "2026 VA Age Group Champs"
 m_date = datetime(2026, 3, 12) 
 
 # Official 2025-2028 Virginia Swimming AGC QTs (9-10 Girls)
-# Ref: https://www.gomotionapp.com/vsfast/UserFiles/Image/QuickUpload/2025-2028-agc-qt-final-updated-005924_068118.pdf
-cuts = {
-    "50 Free": 30.59, 
-    "100 Free": 1:07.49, # Stored as 67.49 for math
-    "200 Free": 2:26.79, # Stored as 146.79
-    "500 Free": 6:22.79, # Stored as 382.79
-    "50 Back": 35.59, 
-    "100 Back": 1:16.89, # Stored as 76.89
-    "50 Breast": 40.09, 
-    "100 Breast": 1:28.09, # Stored as 88.09
-    "50 Fly": 34.09, 
-    "100 Fly": 1:18.89, # Stored as 78.89
-    "100 IM": 1:16.89, # Stored as 76.89
-    "200 IM": 2:46.39 # Stored as 166.39
-}
-
-# Converting the above to flat seconds for the app logic
+# Every time is converted to TOTAL SECONDS for Python stability
 vsi_cuts_seconds = {
-    "50 Free": 30.59, "100 Free": 67.49, "200 Free": 146.79, "500 Free": 382.79,
-    "50 Back": 35.59, "100 Back": 76.89, "50 Breast": 40.09, "100 Breast": 88.09,
-    "50 Fly": 34.09, "100 Fly": 78.89, "100 IM": 76.89, "200 IM": 166.39
+    "50 Free": 30.59, 
+    "100 Free": 67.49,    # (1:07.49)
+    "200 Free": 146.79,   # (2:26.79)
+    "500 Free": 382.79,   # (6:22.79)
+    "50 Back": 35.59, 
+    "100 Back": 76.89,    # (1:16.89)
+    "50 Breast": 40.09, 
+    "100 Breast": 88.09,   # (1:28.09)
+    "50 Fly": 34.09, 
+    "100 Fly": 78.89,    # (1:18.89)
+    "100 IM": 76.89,     # (1:16.89)
+    "200 IM": 166.39     # (2:46.39)
 }
 
 if "pb_data" not in st.session_state: st.session_state["pb_data"] = {e: 0.0 for e in vsi_cuts_seconds}
@@ -60,38 +53,4 @@ with st.sidebar:
     
     st.subheader("New Goal")
     g_m = st.number_input("Min Goal", min_value=0, step=1, value=0, key="in_g_m")
-    g_s = st.number_input("Sec Goal", min_value=0.0, max_value=59.99, step=0.01, value=0.0, key="in_g_s")
-    if st.button("Save Goal", key="btn_g"):
-        st.session_state["goal_data"][ev] = float((g_m * 60) + g_s)
-        st.toast("Goal Saved!")
-
-# --- 5. TABLE LOGIC ---
-def fmt(s):
-    try:
-        val = float(s)
-        if val <= 0: return "--"
-        if val < 60: return "{:.2f}s".format(val)
-        return "{:d}:{:05.2f}".format(int(val // 60), val % 60)
-    except: return "--"
-
-rows = []
-for e, c in vsi_cuts_seconds.items():
-    p = float(st.session_state["pb_data"].get(e, 0.0))
-    g = float(st.session_state["goal_data"].get(e, 0.0))
-    if p <= 0: stat = "No Time"
-    elif p <= c: stat = "✅ CHAMPS CUT!"
-    else: stat = "{:.2f}s to go".format(p - c)
-    rows.append({"Event": e, "Current PB": fmt(p), "Goal": fmt(g), "VSI QT": fmt(c), "Status": stat})
-
-st.subheader("VA Age Group Champs: 2025-2028 QTs")
-st.table(pd.DataFrame(rows))
-
-# --- 6. FOOTER ---
-st.divider()
-c1, c2 = st.columns(2)
-with c1:
-    st.subheader("🎒 Checklist")
-    st.checkbox("2 Pairs Goggles", key="ck1"); st.checkbox("Team Cap", key="ck2")
-with c2:
-    st.subheader("🍌 Nutrition")
-    st.warning("Eat oatmeal or a banana 2 hours before warm-ups!")
+    g_s = st.number_input("Sec Goal", min_value=0.0, max_value=59.99, step=0.01, value=0.0, key="in_
