@@ -2,18 +2,41 @@ import streamlit as st
 import pandas as pd
 from datetime import datetime
 
-# --- 1. DATA & CONFIG ---
+# --- 1. DATA & OFFICIAL 2025-2028 VSI CHAMPIONSHIP QTS ---
 swimmer_name = "Charlotte" 
-m_name = "Junior Olympics"
-m_date = datetime(2026, 3, 20) 
-cuts = {"50 Free": 31.39, "100 Free": 109.29, "500 Free": 379.39, "50 Back": 36.29, "100 Back": 117.99, "50 Breast": 40.99, "100 Breast": 130.19, "50 Fly": 34.39, "100 Fly": 118.99, "100 IM": 118.29, "200 IM": 248.79}
+m_name = "2026 VA Age Group Champs"
+m_date = datetime(2026, 3, 12) 
 
-if "pb_data" not in st.session_state: st.session_state["pb_data"] = {e: 0.0 for e in cuts}
-if "goal_data" not in st.session_state: st.session_state["goal_data"] = {e: 0.0 for e in cuts}
+# Official 2025-2028 Virginia Swimming AGC QTs (9-10 Girls)
+# Ref: https://www.gomotionapp.com/vsfast/UserFiles/Image/QuickUpload/2025-2028-agc-qt-final-updated-005924_068118.pdf
+cuts = {
+    "50 Free": 30.59, 
+    "100 Free": 1:07.49, # Stored as 67.49 for math
+    "200 Free": 2:26.79, # Stored as 146.79
+    "500 Free": 6:22.79, # Stored as 382.79
+    "50 Back": 35.59, 
+    "100 Back": 1:16.89, # Stored as 76.89
+    "50 Breast": 40.09, 
+    "100 Breast": 1:28.09, # Stored as 88.09
+    "50 Fly": 34.09, 
+    "100 Fly": 1:18.89, # Stored as 78.89
+    "100 IM": 1:16.89, # Stored as 76.89
+    "200 IM": 2:46.39 # Stored as 166.39
+}
+
+# Converting the above to flat seconds for the app logic
+vsi_cuts_seconds = {
+    "50 Free": 30.59, "100 Free": 67.49, "200 Free": 146.79, "500 Free": 382.79,
+    "50 Back": 35.59, "100 Back": 76.89, "50 Breast": 40.09, "100 Breast": 88.09,
+    "50 Fly": 34.09, "100 Fly": 78.89, "100 IM": 76.89, "200 IM": 166.39
+}
+
+if "pb_data" not in st.session_state: st.session_state["pb_data"] = {e: 0.0 for e in vsi_cuts_seconds}
+if "goal_data" not in st.session_state: st.session_state["goal_data"] = {e: 0.0 for e in vsi_cuts_seconds}
 
 # --- 2. THE VISIBILITY CSS ---
 st.set_page_config(page_title="Swim Tracker", layout="centered")
-st.markdown("<style>.stApp {background-color: white !important;} .stTable, [data-testid='stTable'] {background-color: white !important; color: black !important;} .stTable td, .stTable th {color: black !important; background-color: white !important;} [data-testid='stSidebar'] {background-color: #111111 !important;} [data-testid='stSidebar'] * {color: white !important;} .header-box {background-color: #0056b3; padding: 20px; border-radius: 15px; color: white !important; text-align: center; margin-bottom: 20px;} .header-box h1 {color: white !important; margin: 0;}</style>", unsafe_allow_html=True)
+st.markdown("<style>.stApp {background-color: white !important;} .stTable, [data-testid='stTable'] {background-color: white !important; color: black !important;} .stTable td, .stTable th {color: black !important; background-color: white !important; border: 1px solid #f0f0f0 !important;} [data-testid='stSidebar'] {background-color: #111111 !important;} [data-testid='stSidebar'] * {color: white !important;} .header-box {background-color: #0056b3; padding: 20px; border-radius: 15px; color: white !important; text-align: center; margin-bottom: 20px;} .header-box h1 {color: white !important; margin: 0;}</style>", unsafe_allow_html=True)
 
 # --- 3. HEADER & COUNTDOWN ---
 st.markdown(f'<div class="header-box"><h1>🏊 {swimmer_name.upper()} TRACKER</h1></div>', unsafe_allow_html=True)
@@ -24,7 +47,7 @@ else: st.success(f"🎉 {m_name} Day!")
 # --- 4. SIDEBAR ---
 with st.sidebar:
     st.header("Update Performance")
-    ev = st.selectbox("Select Event", list(cuts.keys()), key="sel_ev")
+    ev = st.selectbox("Select Event", list(vsi_cuts_seconds.keys()), key="sel_ev")
     
     st.subheader("New PB")
     p_m = st.number_input("Min", min_value=0, step=1, value=0, key="in_p_m")
@@ -45,21 +68,22 @@ with st.sidebar:
 # --- 5. TABLE LOGIC ---
 def fmt(s):
     try:
-        if float(s) <= 0: return "--"
-        if float(s) < 60: return "{:.2f}s".format(float(s))
-        return "{:d}:{:05.2f}".format(int(float(s)//60), float(s)%60)
+        val = float(s)
+        if val <= 0: return "--"
+        if val < 60: return "{:.2f}s".format(val)
+        return "{:d}:{:05.2f}".format(int(val // 60), val % 60)
     except: return "--"
 
 rows = []
-for e, c in cuts.items():
+for e, c in vsi_cuts_seconds.items():
     p = float(st.session_state["pb_data"].get(e, 0.0))
     g = float(st.session_state["goal_data"].get(e, 0.0))
     if p <= 0: stat = "No Time"
-    elif p <= c: stat = "✅ ACHIEVED"
+    elif p <= c: stat = "✅ CHAMPS CUT!"
     else: stat = "{:.2f}s to go".format(p - c)
-    rows.append({"Event": e, "Current PB": fmt(p), "Goal": fmt(g), "A Cut": fmt(c), "Status": stat})
+    rows.append({"Event": e, "Current PB": fmt(p), "Goal": fmt(g), "VSI QT": fmt(c), "Status": stat})
 
-st.subheader("Performance Overview")
+st.subheader("VA Age Group Champs: 2025-2028 QTs")
 st.table(pd.DataFrame(rows))
 
 # --- 6. FOOTER ---
