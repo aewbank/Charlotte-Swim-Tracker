@@ -7,31 +7,30 @@ name = "Charlotte"
 meet = "2026 VA Age Group Champs"
 m_date = datetime(2026, 3, 12) 
 
-# Official standards from VSFAST PDF (Short Course Yards)
-# Stored as TOTAL SECONDS for logic
+# EXACT SCY QTs from PDF for 10 & Under Girls
 vsi = {
-    "50 Free": 30.59, 
-    "100 Free": 67.49,    # 1:07.49
-    "200 Free": 146.79,   # 2:26.79
-    "500 Free": 382.79,   # 6:22.79
-    "50 Back": 35.59, 
-    "100 Back": 76.89,    # 1:16.89
-    "50 Breast": 40.09, 
-    "100 Breast": 88.09,   # 1:28.09
-    "50 Fly": 34.09, 
-    "100 Fly": 78.89,    # 1:18.89
-    "100 IM": 76.89,     # 1:16.89
-    "200 IM": 166.39     # 2:46.39
+    "50 Free": 31.79, 
+    "100 Free": 109.99,   # 1:09.99 (69.99s)
+    "200 Free": 231.59,   # 2:31.59 (151.59s)
+    "500 Free": 643.19,   # 6:43.19 (403.19s)
+    "50 Back": 36.99, 
+    "100 Back": 118.99,   # 1:18.99 (78.99s)
+    "50 Breast": 41.69, 
+    "100 Breast": 131.69,  # 1:31.69 (91.69s)
+    "50 Fly": 35.39, 
+    "100 Fly": 122.59,    # 1:22.59 (82.59s)
+    "100 IM": 119.59,     # 1:19.59 (79.59s)
+    "200 IM": 171.99      # 2:51.99 (171.99s)
 }
 
 if "pbs" not in st.session_state: st.session_state["pbs"] = {e: 0.0 for e in vsi}
 if "gls" not in st.session_state: st.session_state["gls"] = {e: 0.0 for e in vsi}
 
-# --- 2. THE VISIBILITY CSS ---
+# --- 2. CSS ---
 st.set_page_config(page_title="Swim Tracker", layout="centered")
 st.markdown("<style>.stApp {background-color: white !important;} .stTable, [data-testid='stTable'] {background-color: white !important; color: black !important;} .stTable td, .stTable th {color: black !important; background-color: white !important; border: 1px solid #f0f0f0 !important;} [data-testid='stSidebar'] {background-color: #111111 !important;} [data-testid='stSidebar'] * {color: white !important;} .header-box {background-color: #0056b3; padding: 20px; border-radius: 15px; color: white !important; text-align: center; margin-bottom: 20px;} .header-box h1 {color: white !important; margin: 0;}</style>", unsafe_allow_html=True)
 
-# --- 3. HEADER & COUNTDOWN ---
+# --- 3. HEADER ---
 st.markdown(f'<div class="header-box"><h1>🏊 {name.upper()} TRACKER</h1></div>', unsafe_allow_html=True)
 days = (m_date - datetime.now()).days
 if days >= 0: st.info(f"⏳ {days} Days until {meet}")
