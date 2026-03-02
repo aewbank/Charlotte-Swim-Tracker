@@ -2,13 +2,13 @@ import streamlit as st
 import pandas as pd
 from datetime import datetime
 
-# --- 1. DATA & VSI 2025-2028 QTS ---
+# --- 1. OFFICIAL 2025-2028 VSI 10 & UNDER GIRLS QTs ---
 name = "Charlotte" 
 meet = "2026 VA Age Group Champs"
 m_date = datetime(2026, 3, 12) 
 
-# Official 2025-2028 VSI AGC QTs (9-10 Girls)
-# Stored as TOTAL SECONDS
+# Official standards from VSFAST PDF (Short Course Yards)
+# Stored as TOTAL SECONDS for logic
 vsi = {
     "50 Free": 30.59, 
     "100 Free": 67.49,    # 1:07.49
@@ -24,16 +24,14 @@ vsi = {
     "200 IM": 166.39     # 2:46.39
 }
 
-if "pbs" not in st.session_state: 
-    st.session_state["pbs"] = {e: 0.0 for e in vsi}
-if "gls" not in st.session_state: 
-    st.session_state["gls"] = {e: 0.0 for e in vsi}
+if "pbs" not in st.session_state: st.session_state["pbs"] = {e: 0.0 for e in vsi}
+if "gls" not in st.session_state: st.session_state["gls"] = {e: 0.0 for e in vsi}
 
-# --- 2. CSS ---
+# --- 2. THE VISIBILITY CSS ---
 st.set_page_config(page_title="Swim Tracker", layout="centered")
 st.markdown("<style>.stApp {background-color: white !important;} .stTable, [data-testid='stTable'] {background-color: white !important; color: black !important;} .stTable td, .stTable th {color: black !important; background-color: white !important; border: 1px solid #f0f0f0 !important;} [data-testid='stSidebar'] {background-color: #111111 !important;} [data-testid='stSidebar'] * {color: white !important;} .header-box {background-color: #0056b3; padding: 20px; border-radius: 15px; color: white !important; text-align: center; margin-bottom: 20px;} .header-box h1 {color: white !important; margin: 0;}</style>", unsafe_allow_html=True)
 
-# --- 3. HEADER ---
+# --- 3. HEADER & COUNTDOWN ---
 st.markdown(f'<div class="header-box"><h1>🏊 {name.upper()} TRACKER</h1></div>', unsafe_allow_html=True)
 days = (m_date - datetime.now()).days
 if days >= 0: st.info(f"⏳ {days} Days until {meet}")
@@ -60,7 +58,7 @@ with st.sidebar:
         st.session_state["gls"][ev] = float((g_m * 60) + g_s)
         st.toast("Goal Saved!")
 
-# --- 5. TABLE ---
+# --- 5. TABLE LOGIC ---
 def fmt(s):
     try:
         v = float(s)
@@ -78,7 +76,7 @@ for e, c in vsi.items():
     else: stt = "{:.2f}s to go".format(p - c)
     rows.append({"Event": e, "PB": fmt(p), "Goal": fmt(g), "VSI QT": fmt(c), "Status": stt})
 
-st.subheader("VA Age Group Champs: 2025-2028 QTs")
+st.subheader("VA Age Group Champs: 10 & Under Girls")
 st.table(pd.DataFrame(rows))
 
 # --- 6. FOOTER ---
