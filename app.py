@@ -16,7 +16,8 @@ vsi = {
 
 # --- 2. GSHEETS CONNECTION ---
 conn = st.connection("gsheets", type=GSheetsConnection)
-df = conn.read(ttl="10m") # Reads the current PBs/Goals from your Sheet
+# We use clear_cache so you see your updates immediately
+df = conn.read(ttl=0) 
 
 # --- 3. CSS (Total Black Font Force) ---
 st.set_page_config(page_title="Swim Tracker", layout="centered")
@@ -41,8 +42,8 @@ with st.sidebar:
         new_val = float((p_m * 60) + p_s)
         df.loc[df["Event"] == ev, "PB"] = new_val
         conn.update(data=df)
+        st.cache_data.clear() # Forces the app to refresh from the sheet
         st.balloons()
-        st.success("PB Saved to Cloud!")
 
     st.divider()
     
@@ -54,7 +55,8 @@ with st.sidebar:
         new_gl = float((g_m * 60) + g_s)
         df.loc[df["Event"] == ev, "Goal"] = new_gl
         conn.update(data=df)
-        st.toast("Goal Saved to Cloud!")
+        st.cache_data.clear()
+        st.toast("Goal Saved!")
 
 # --- 6. TABLE LOGIC ---
 def fmt(s):
@@ -65,12 +67,20 @@ def fmt(s):
         return "{:d}:{:05.2f}".format(int(v // 60), v % 60)
     except: return "--"
 
+def safe_float(val):
+    try:
+        return float(val) if pd.notnull(val) else 0.0
+    except:
+        return 0.0
+
 rows = []
 for e, c in vsi.items():
-    # Get values from the DataFrame we read from Sheets
     row = df[df["Event"] == e]
-    p = float(row["PB"].values[0]) if not row.empty else 0.0
-    g = float(row["Goal"].values[0]) if not row.empty else 0.0
+    if not row.empty:
+        p = safe_float(row["PB"].values[0])
+        g = safe_float(row["Goal"].values[0])
+    else:
+        p, g = 0.0, 0.0
     
     if p <= 0: stt = "No Time"
     elif p <= c: stt = "✅ CHAMPS CUT!"
